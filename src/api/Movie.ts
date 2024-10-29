@@ -3,6 +3,8 @@ import Movie from '../Models/Movie'
 import TimeSlot from '../Models/TimeSlot'
 import session from 'express-session'
 import Day from '../Models/Day'
+import Theater from '../Models/Theater'
+import TheaterScreen from '../Models/TheaterScreen'
 
 const router = Router()
 
@@ -91,6 +93,7 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
         mins,
         secs
       }, 
+      theaterScreenId
     } = req.body
 
     const day = await Day.findOne({date})
@@ -100,7 +103,13 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
     }
 
     const movie = await Movie.findOne({name:movieName})
-    if(!day){
+    if(!movie){
+      res.status(500).json("movie Doesnt Exist")
+      return
+    }
+
+    const theaterScreen = await TheaterScreen.find({id:theaterScreenId})
+    if(!theaterScreen){
       res.status(500).json("movie Doesnt Exist")
       return
     }
@@ -115,12 +124,13 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
       return
     }
     const timeslot = new TimeSlot({
-      movie:movie?.id,
+      movie:movie,
       time:{
         hours,
         mins,
         secs
-      }
+      },
+      theaterScreen:theaterScreen
     })
 
     await timeslot.save()

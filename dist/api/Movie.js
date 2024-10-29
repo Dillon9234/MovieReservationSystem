@@ -16,6 +16,7 @@ const express_1 = require("express");
 const Movie_1 = __importDefault(require("../Models/Movie"));
 const TimeSlot_1 = __importDefault(require("../Models/TimeSlot"));
 const Day_1 = __importDefault(require("../Models/Day"));
+const TheaterScreen_1 = __importDefault(require("../Models/TheaterScreen"));
 const router = (0, express_1.Router)();
 const isAuth = (req, res, next) => {
     if (req.session && req.session.isAuth) {
@@ -56,7 +57,7 @@ router.get('/getMovies', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({ message: 'Error fetching movies', error });
     }
 }));
-router.post('/addDate', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/addDay', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { date } = req.body;
         if (yield Day_1.default.findOne({ date })) {
@@ -73,16 +74,21 @@ router.post('/addDate', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(500).json({ message: 'Error adding day', error });
     }
 }));
-router.post('/addtimeslot', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { date, movieName, time: { hours, mins, secs }, } = req.body;
+        const { date, movieName, time: { hours, mins, secs }, theaterScreenId } = req.body;
         const day = yield Day_1.default.findOne({ date });
         if (!day) {
             res.status(500).json("Date Doesnt Exist");
             return;
         }
         const movie = yield Movie_1.default.findOne({ name: movieName });
-        if (!day) {
+        if (!movie) {
+            res.status(500).json("movie Doesnt Exist");
+            return;
+        }
+        const theaterScreen = yield TheaterScreen_1.default.find({ id: theaterScreenId });
+        if (!theaterScreen) {
             res.status(500).json("movie Doesnt Exist");
             return;
         }
@@ -96,12 +102,13 @@ router.post('/addtimeslot', isAuth, (req, res) => __awaiter(void 0, void 0, void
             return;
         }
         const timeslot = new TimeSlot_1.default({
-            movie: movie === null || movie === void 0 ? void 0 : movie.id,
+            movie: movie,
             time: {
                 hours,
                 mins,
                 secs
-            }
+            },
+            theaterScreen: theaterScreen
         });
         yield timeslot.save();
         day.slots.push(timeslot.id);
@@ -112,7 +119,7 @@ router.post('/addtimeslot', isAuth, (req, res) => __awaiter(void 0, void 0, void
         res.status(500).json({ message: 'Error adding timeslot', error });
     }
 }));
-router.get('/getday/:date', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { date } = req.params;
         const day = yield Day_1.default.findOne({ date }).populate({

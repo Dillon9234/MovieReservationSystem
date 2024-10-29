@@ -22,23 +22,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const Movie_1 = __importDefault(require("./Movie"));
-const Seat_1 = __importDefault(require("./Seat"));
-const TheaterScreen_1 = __importDefault(require("./TheaterScreen"));
-const timeSlotSchema = new mongoose_1.Schema({
-    movie: { type: mongoose_1.Schema.Types.ObjectId, ref: Movie_1.default, required: true },
-    time: {
-        hours: { type: Number, required: true, min: 0 },
-        mins: { type: Number, required: true, min: 0, max: 59 },
-        secs: { type: Number, required: true, min: 0, max: 59 },
-    },
-    theaterScreen: { type: mongoose_1.Schema.Types.ObjectId, ref: TheaterScreen_1.default, required: true },
-    bookedSeats: [{ type: mongoose_1.Schema.Types.ObjectId, ref: Seat_1.default }]
+const seatSchema = new mongoose_1.Schema({
+    row: { type: Number, required: true },
+    column: { type: Number, required: true },
 });
-const TimeSlot = mongoose_1.default.model('TimeSlot', timeSlotSchema);
-exports.default = TimeSlot;
+const Seat = mongoose_1.default.model('Seat', seatSchema);
+exports.default = Seat;

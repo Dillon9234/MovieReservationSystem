@@ -5,6 +5,7 @@ import MongoDBStore from 'connect-mongodb-session'
 import dotenv from 'dotenv'
 import userRouter from './api/User'
 import movieRouter from './api/Movie'
+import theaterRouter from './api/Theater'
 
 dotenv.config()
 
@@ -33,6 +34,7 @@ app.use(session({
 
 app.use('/user', userRouter)
 app.use('/movie',movieRouter)
+app.use('/theater',theaterRouter)
 
 // Start the server
 app.listen(port, () => {

@@ -10,6 +10,7 @@ const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-sessi
 const dotenv_1 = __importDefault(require("dotenv"));
 const User_1 = __importDefault(require("./api/User"));
 const Movie_1 = __importDefault(require("./api/Movie"));
+const Theater_1 = __importDefault(require("./api/Theater"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use((0, express_session_1.default)({
 }));
 app.use('/user', User_1.default);
 app.use('/movie', Movie_1.default);
+app.use('/theater', Theater_1.default);
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
