@@ -1,0 +1,30 @@
+{
+  "name": "moviereservationsystem",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js"
+  },
+  "author": "Dillon",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/connect-mongodb-session": "^2.4.7",
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.0",
+    "@types/node": "^22.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "connect-mongodb-session": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "mongoose": "^8.7.3"
+  }
+}
