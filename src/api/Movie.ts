@@ -62,7 +62,7 @@ router.get('/getMovies', async (req: Request, res: Response) => {
   }
 })
 
-router.post('/addDate',isAuth, async (req:Request, res:Response)=>{
+router.post('/addDay',isAuth, async (req:Request, res:Response)=>{
   try {
     const { date } = req.body
 
@@ -83,7 +83,7 @@ router.post('/addDate',isAuth, async (req:Request, res:Response)=>{
   }
 })
 
-router.post('/addtimeslot',isAuth, async (req: Request, res: Response)=>{
+router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
   try{
     const {
       date, movieName, time:{
@@ -134,7 +134,7 @@ router.post('/addtimeslot',isAuth, async (req: Request, res: Response)=>{
   }
 })
 
-router.get('/getday/:date', async (req: Request, res: Response) => {
+router.get('/getDay/:date', async (req: Request, res: Response) => {
   try {
     const { date } = req.params;
 
