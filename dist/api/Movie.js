@@ -87,16 +87,18 @@ router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void
             res.status(500).json("movie Doesnt Exist");
             return;
         }
-        const theaterScreen = yield TheaterScreen_1.default.find({ id: theaterScreenId });
+        const theaterScreen = yield TheaterScreen_1.default.findOne({ Id: theaterScreenId });
         if (!theaterScreen) {
-            res.status(500).json("movie Doesnt Exist");
+            res.status(500).json("Theater Screen Doesnt Exist");
             return;
         }
         const tempTimeSlot = yield TimeSlot_1.default.findOne({ time: {
                 hours,
                 mins,
                 secs
-            } });
+            },
+            theaterScreen: theaterScreen
+        });
         if (tempTimeSlot) {
             res.status(400).json({ message: 'TimeSlot in use' });
             return;
@@ -124,7 +126,10 @@ router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, func
         const { date } = req.params;
         const day = yield Day_1.default.findOne({ date }).populate({
             path: 'slots',
-            populate: { path: 'movie', select: 'name' }
+            populate: [
+                { path: 'movie', select: 'name' },
+                { path: 'theaterScreen', select: 'Id' }
+            ],
         });
         if (!day) {
             res.status(404).json({ message: "Day not found" });
@@ -135,6 +140,7 @@ router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, func
             slots: day.slots.map((slot) => ({
                 movieName: slot.movie.name,
                 time: slot.time,
+                theaterId: slot.theaterScreen.Id
             })),
         };
         res.json(formattedDay);

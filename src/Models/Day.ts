@@ -3,7 +3,7 @@ import TimeSlot, { ITimeSlot } from './TimeSlot';
 
 export interface IDay extends Document {
   date:Date,
-  slots: Types.ObjectId[],
+  slots: ITimeSlot[],
 }
 
 const daySchema = new Schema<IDay>({

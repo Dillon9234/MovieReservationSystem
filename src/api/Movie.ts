@@ -1,9 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import Movie from '../Models/Movie'
 import TimeSlot from '../Models/TimeSlot'
-import session from 'express-session'
 import Day from '../Models/Day'
-import Theater from '../Models/Theater'
 import TheaterScreen from '../Models/TheaterScreen'
 
 const router = Router()
@@ -108,17 +106,18 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
       return
     }
 
-    const theaterScreen = await TheaterScreen.find({id:theaterScreenId})
+    const theaterScreen = await TheaterScreen.findOne({Id:theaterScreenId})
     if(!theaterScreen){
-      res.status(500).json("movie Doesnt Exist")
+      res.status(500).json("Theater Screen Doesnt Exist")
       return
     }
-
     const tempTimeSlot = await TimeSlot.findOne({time:{
       hours,
       mins,
       secs
-    }})
+      },
+      theaterScreen:theaterScreen
+    })
     if(tempTimeSlot){
       res.status(400).json({ message: 'TimeSlot in use' })
       return
@@ -150,9 +149,11 @@ router.get('/getDay/:date', async (req: Request, res: Response) => {
 
     const day = await Day.findOne({ date }).populate({
       path: 'slots',
-      populate: { path: 'movie', select: 'name' } 
+      populate: [
+        { path: 'movie', select: 'name' },
+        { path: 'theaterScreen', select: 'Id' }
+      ],
     });
-
     if (!day) {
       res.status(404).json({ message: "Day not found" });
       return
@@ -160,9 +161,10 @@ router.get('/getDay/:date', async (req: Request, res: Response) => {
 
     const formattedDay = {
       date: day.date,
-      slots: day.slots.map((slot: any) => ({
+      slots: day.slots.map((slot) => ({
         movieName: slot.movie.name,
         time: slot.time,
+        theaterId: slot.theaterScreen.Id
       })),
     };
 
