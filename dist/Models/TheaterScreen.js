@@ -27,12 +27,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const Seat_1 = __importDefault(require("./Seat"));
 const Theater_1 = __importDefault(require("./Theater"));
+const Seat_1 = __importDefault(require("./Seat"));
 const theaterScreenSchema = new mongoose_1.Schema({
     theater: { type: mongoose_1.Schema.Types.ObjectId, ref: Theater_1.default },
-    Id: { type: Number, required: true },
-    seating: [{ type: mongoose_1.Schema.Types.ObjectId, ref: Seat_1.default }]
+    Id: { type: Number, required: true, unique: true },
+    seating: { type: [Seat_1.default] },
 });
 const TheaterScreen = mongoose_1.default.model('TheaterScreen', theaterScreenSchema);
 exports.default = TheaterScreen;

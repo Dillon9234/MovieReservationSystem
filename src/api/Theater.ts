@@ -50,42 +50,49 @@ router.get('/getTheater', async (req: Request, res: Response) => {
   }
 })
 
-router.post('/addTheaterScreen',isAuth, async (req: Request, res: Response)=>{
-  try{
-    const {
-      theaterId, seatingLayout
-    } = req.body
+router.post('/addTheaterScreen', isAuth, async (req: Request, res: Response) => {
+  try {
+    const { theaterId, screenId, seatingLayout } = req.body;
 
-    const theater = await Theater.findOne({Id:theaterId})
-    if(!theater){
-      res.status(500).json("Theater Doesnt Exist")
+    const theater = await Theater.findOne({ Id: theaterId });
+    if (!theater) {
+      res.status(500).json("Theater Doesn't Exist");
+      return;
+    }
+
+    const theaterScreen = await TheaterScreen.findOne({Id: screenId})
+    if(theaterScreen){
+      res.status(400).json({ message: 'Theater Screen already exists' })
       return
     }
 
     const seating: ISeat[] = [];
 
-    for (const [rowIndex, columns] of seatingLayout.entries()) {
-        for (const colIndex of columns) {
-          const seat:ISeat = {
-            row: rowIndex + 1,
-            column: colIndex 
-          }
-          seating.push(seat);
-        }
+    for (const row of seatingLayout) {
+      const { row: rowNumber, columns } = row;
+
+      for (let colIndex = 0; colIndex < columns; colIndex++) {
+        const seat: ISeat = {
+          row: rowNumber,
+          column: colIndex
+        };
+        seating.push(seat);
+      }
     }
 
-      const newTheaterScreen = new TheaterScreen({
-        Id: theaterId,
-        seating,
-      });
-  
-      await newTheaterScreen.save();
+    const newTheaterScreen = new TheaterScreen({
+      theater:theater,
+      Id: screenId,
+      seating,
+    });
 
-    res.status(201).json(newTheaterScreen)
-  }catch(error){
-    res.status(500).json({ message: 'Error adding TheaterScreen', error })
+    await newTheaterScreen.save();
+
+    res.status(201).json(newTheaterScreen);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding TheaterScreen', error });
   }
-})
+});
 
 router.get('/getTheaterScreen', async (req: Request, res: Response) => {
     try {

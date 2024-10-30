@@ -34,6 +34,5 @@ const movieSchema = new mongoose_1.Schema({
     },
     genre: { type: String, required: true },
 });
-// 3. Create a Model
 const Movie = mongoose_1.default.model('Movie', movieSchema);
 exports.default = Movie;

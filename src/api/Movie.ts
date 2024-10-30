@@ -145,7 +145,7 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
 
 router.get('/getDay/:date', async (req: Request, res: Response) => {
   try {
-    const { date } = req.params;
+    const { date } = req.params;    
 
     const day = await Day.findOne({ date }).populate({
       path: 'slots',

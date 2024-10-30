@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const Theater_1 = __importDefault(require("../Models/Theater"));
-const Seat_1 = __importDefault(require("../Models/Seat"));
 const TheaterScreen_1 = __importDefault(require("../Models/TheaterScreen"));
 const router = (0, express_1.Router)();
 const isAuth = (req, res, next) => {
@@ -50,45 +49,33 @@ router.get('/getTheater', (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.status(500).json({ message: 'Error fetching theaters', error });
     }
 }));
-router.post('/addSeats', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { row, column } = req.body;
-        if (yield Seat_1.default.findOne({ row: row, column: column })) {
-            res.status(400).json({ message: 'Seat already exists' });
-            return;
-        }
-        const seat = new Seat_1.default({
-            row: row,
-            column: column
-        });
-        yield seat.save();
-        res.status(201).json(seat);
-    }
-    catch (error) {
-        res.status(500).json({ message: 'Error adding Seat', error });
-    }
-}));
 router.post('/addTheaterScreen', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { theaterId, seatingLayout } = req.body;
+        const { theaterId, screenId, seatingLayout } = req.body;
         const theater = yield Theater_1.default.findOne({ Id: theaterId });
         if (!theater) {
-            res.status(500).json("Theater Doesnt Exist");
+            res.status(500).json("Theater Doesn't Exist");
+            return;
+        }
+        const theaterScreen = yield TheaterScreen_1.default.findOne({ Id: screenId });
+        if (theaterScreen) {
+            res.status(400).json({ message: 'Theater Screen already exists' });
             return;
         }
         const seating = [];
-        for (const [rowIndex, columns] of seatingLayout.entries()) {
-            for (const colIndex of columns) {
-                const seat = yield Seat_1.default.findOne({ row: rowIndex + 1, column: colIndex });
-                if (!seat) {
-                    res.status(500).json({ message: 'Invalid Seating' });
-                    return;
-                }
+        for (const row of seatingLayout) {
+            const { row: rowNumber, columns } = row;
+            for (let colIndex = 0; colIndex < columns; colIndex++) {
+                const seat = {
+                    row: rowNumber,
+                    column: colIndex
+                };
                 seating.push(seat);
             }
         }
         const newTheaterScreen = new TheaterScreen_1.default({
-            Id: theaterId,
+            theater: theater,
+            Id: screenId,
             seating,
         });
         yield newTheaterScreen.save();
