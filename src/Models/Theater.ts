@@ -1,9 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose';
-
-export interface ITheater extends Document {
-  Id:Number,
-  name:String
-}
+import ITheater from '../Interfaces/ITheater';
 
 const TheaterSchema = new Schema<ITheater>({
     Id: { type: Number, required: true, unique: true },

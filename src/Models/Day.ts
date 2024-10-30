@@ -1,10 +1,6 @@
-import mongoose, { Schema, Model, Document, Types } from 'mongoose';
-import TimeSlot, { ITimeSlot } from './TimeSlot'; 
-
-export interface IDay extends Document {
-  date:Date,
-  slots: ITimeSlot[],
-}
+import mongoose, { Schema, Model} from 'mongoose';
+import IDay from '../Interfaces/IDay';
+import TimeSlot from './TimeSlot';
 
 const daySchema = new Schema<IDay>({
     date: {type:Date, required:true},

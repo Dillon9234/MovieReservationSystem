@@ -1,16 +1,9 @@
-import mongoose, { Schema, Model, Document, Types } from 'mongoose';
-
-export interface ISeat extends Document {
-  row:Number,
-  column:Number,
-}
+import { Schema } from "mongoose";
+import ISeat from "../Interfaces/ISeat";
 
 const seatSchema = new Schema<ISeat>({
-    row: {type:Number, required:true},
-    column: {type:Number, required:true},
-})
+    row: { type: Number, required: true },
+    column: { type: Number, required: true }
+});
 
-const Seat: Model<ISeat> = mongoose.model<ISeat>('Seat',seatSchema)
-
-export default Seat
-
+export default seatSchema

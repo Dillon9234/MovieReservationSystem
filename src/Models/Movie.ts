@@ -1,15 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose';
-
-export interface IMovie extends Document {
-  name: String,
-  releaseDate:Date,
-  duration:{
-    hours:Number,
-    mins:Number,
-    secs:Number,
-  },
-  genre:String,
-}
+import IMovie from '../Interfaces/IMovie';
 
 const movieSchema = new Schema<IMovie>({
     name: { type: String, required: true },
@@ -22,7 +12,6 @@ const movieSchema = new Schema<IMovie>({
     genre: { type: String, required: true },
   });
 
-// 3. Create a Model
 const Movie: Model<IMovie> = mongoose.model<IMovie>('Movie', movieSchema);
 
 export default Movie;

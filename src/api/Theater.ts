@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import Theater from '../Models/Theater'
-import Seat, { ISeat } from '../Models/Seat'
 import TheaterScreen from '../Models/TheaterScreen'
+import ISeat from '../Interfaces/ISeat'
 
 const router = Router()
 
@@ -50,28 +50,6 @@ router.get('/getTheater', async (req: Request, res: Response) => {
   }
 })
 
-router.post('/addSeats',isAuth, async (req:Request, res:Response)=>{
-  try {
-    const { row,column } = req.body
-
-    if (await Seat.findOne({ row:row, column:column })) {
-      res.status(400).json({ message: 'Seat already exists' })
-      return
-    }
-
-    const seat = new Seat({
-      row:row,
-      column:column
-    })
-
-    await seat.save()
-
-    res.status(201).json(seat)
-  } catch (error) {
-    res.status(500).json({ message: 'Error adding Seat', error })
-  }
-})
-
 router.post('/addTheaterScreen',isAuth, async (req: Request, res: Response)=>{
   try{
     const {
@@ -88,14 +66,13 @@ router.post('/addTheaterScreen',isAuth, async (req: Request, res: Response)=>{
 
     for (const [rowIndex, columns] of seatingLayout.entries()) {
         for (const colIndex of columns) {
-          const seat = await Seat.findOne({row:rowIndex+1, column:colIndex})
-          if(!seat){            
-            res.status(500).json({ message: 'Invalid Seating' })
-            return
+          const seat:ISeat = {
+            row: rowIndex + 1,
+            column: colIndex 
           }
           seating.push(seat);
         }
-      }
+    }
 
       const newTheaterScreen = new TheaterScreen({
         Id: theaterId,
