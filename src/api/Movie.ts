@@ -174,5 +174,39 @@ router.get('/getDay/:date', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/getTimeslot', async (req: Request, res: Response) => {
+  try {
+    const { hours, mins, secs, theaterScreenId } = req.query;
+
+    const theaterScreen = await TheaterScreen.findOne({ Id: theaterScreenId });
+    if (!theaterScreen) {
+      res.status(404).json({ message: 'Theater screen not found' });
+      return;
+    }
+
+    const timeslot = await TimeSlot.findOne({
+      time: { hours: Number(hours), mins: Number(mins), secs: Number(secs) },
+      theaterScreen: theaterScreen,
+    }).populate('movie');
+
+    if (!timeslot) {
+      res.status(404).json({ message: 'Time slot not found' });
+      return;
+    }
+
+    const formattedTimeslot = {
+      movie: timeslot.movie,
+      time: timeslot.time,
+      seating: theaterScreen.seating,
+      bookedSeats: timeslot.bookedSeats,
+    };
+
+    res.status(200).json(formattedTimeslot);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching time slot', error });
+  }
+});
+
+
 
 export default router

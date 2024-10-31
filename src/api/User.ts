@@ -51,6 +51,7 @@ router.post('/signin', async (req:Request, res:Response): Promise<void> => {
             return
         }
         req.session.isAuth = true
+        res.cookie("Username",existingUser.name,{maxAge:60000*60*5, signed:true})
         res.status(200).json({ message: 'Sign-in successful' })
 
     } catch (error) {

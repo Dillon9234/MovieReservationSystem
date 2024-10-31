@@ -149,4 +149,32 @@ router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ message: 'Error fetching Day', error });
     }
 }));
+router.get('/getTimeslot', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { hours, mins, secs, theaterScreenId } = req.query;
+        const theaterScreen = yield TheaterScreen_1.default.findOne({ Id: theaterScreenId });
+        if (!theaterScreen) {
+            res.status(404).json({ message: 'Theater screen not found' });
+            return;
+        }
+        const timeslot = yield TimeSlot_1.default.findOne({
+            time: { hours: Number(hours), mins: Number(mins), secs: Number(secs) },
+            theaterScreen: theaterScreen,
+        }).populate('movie');
+        if (!timeslot) {
+            res.status(404).json({ message: 'Time slot not found' });
+            return;
+        }
+        const formattedTimeslot = {
+            movie: timeslot.movie,
+            time: timeslot.time,
+            seating: theaterScreen.seating,
+            bookedSeats: timeslot.bookedSeats,
+        };
+        res.status(200).json(formattedTimeslot);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error fetching time slot', error });
+    }
+}));
 exports.default = router;

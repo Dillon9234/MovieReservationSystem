@@ -6,6 +6,8 @@ import dotenv from 'dotenv'
 import userRouter from './api/User'
 import movieRouter from './api/Movie'
 import theaterRouter from './api/Theater'
+import bookRouter from './api/Book'
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
@@ -31,10 +33,12 @@ app.use(session({
   saveUninitialized: false,
   store: store,
 }))
+app.use(cookieParser(process.env.COOKIE_SIGN))
 
 app.use('/user', userRouter)
 app.use('/movie',movieRouter)
 app.use('/theater',theaterRouter)
+app.use('/book',bookRouter)
 
 // Start the server
 app.listen(port, () => {
