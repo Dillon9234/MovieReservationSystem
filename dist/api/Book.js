@@ -25,7 +25,7 @@ const isAuth = (req, res, next) => {
 };
 router.post('/book', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { movieName, time: { hours, mins, secs, }, theaterScreenId, seatingLayout } = req.body;
+        const { date, movieName, time: { hours, mins, secs, }, theaterScreenId, seatingLayout } = req.body;
         const hasDuplicates = seatingLayout.some((seat, index) => seatingLayout.findIndex((s) => s.row === seat.row && s.column === seat.column) !== index);
         if (hasDuplicates) {
             res.status(400).json({ message: 'Duplicate seats detected in the request' });
@@ -41,7 +41,7 @@ router.post('/book', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, fun
             res.status(500).json({ message: 'Error fetching Movie' });
             return;
         }
-        const timeslot = yield TimeSlot_1.default.findOne({ movie: movie, time: { hours, mins, secs } });
+        const timeslot = yield TimeSlot_1.default.findOne({ date: date, movie: movie, time: { hours, mins, secs }, theaterScreen: theaterScreen });
         if (!timeslot) {
             res.status(500).json({ message: 'Error fetching timeslot' });
             return;
@@ -73,4 +73,5 @@ router.post('/book', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).json({ message: 'Error booking seats', error });
     }
 }));
+//router.get('/getMovieScreenSlots')
 exports.default = router;

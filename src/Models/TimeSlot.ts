@@ -7,6 +7,7 @@ import ITimeSlot from '../Interfaces/ITimeSlot';
 
 
 const timeSlotSchema = new Schema<ITimeSlot>({
+    date:{type:Date, required:true},
     movie:{type: Schema.Types.ObjectId, ref: Movie, required:true},
     time: {
         hours: { type: Number, required: true, min: 0 },

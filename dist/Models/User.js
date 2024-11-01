@@ -30,6 +30,5 @@ const userSchema = new mongoose_1.Schema({
     hashedPassword: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
 });
-// 3. Create a Model
 const User = mongoose_1.default.model('User', userSchema);
 exports.default = User;

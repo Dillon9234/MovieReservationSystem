@@ -3,6 +3,7 @@ import ISeat from './ISeat';
 import ITheaterScreen from './ITheaterScreen';
 
 export default interface ITimeSlot extends Document {
+  date:Date,
   movie: IMovie; 
   time:{
     hours:Number,

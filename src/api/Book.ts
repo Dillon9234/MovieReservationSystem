@@ -21,7 +21,7 @@ const isAuth = (req: Request, res: Response, next: NextFunction): void => {
 
 router.post('/book',isAuth,  async (req: Request, res: Response) =>{
     try {
-        const { movieName, time:{
+        const { date, movieName, time:{
             hours,
             mins,
             secs,
@@ -49,7 +49,7 @@ router.post('/book',isAuth,  async (req: Request, res: Response) =>{
             return
         }
 
-        const timeslot = await TimeSlot.findOne({movie:movie, time:{hours,mins,secs}})
+        const timeslot = await TimeSlot.findOne({date:date, movie:movie, time:{hours,mins,secs}, theaterScreen:theaterScreen})
         if(!timeslot){
             res.status(500).json({ message: 'Error fetching timeslot' })
             return
@@ -85,5 +85,7 @@ router.post('/book',isAuth,  async (req: Request, res: Response) =>{
         res.status(500).json({ message: 'Error booking seats', error })
     }
 })
+
+//router.get('/getMovieScreenSlots')
 
 export default router

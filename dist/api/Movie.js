@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const Movie_1 = __importDefault(require("../Models/Movie"));
 const TimeSlot_1 = __importDefault(require("../Models/TimeSlot"));
-const Day_1 = __importDefault(require("../Models/Day"));
 const TheaterScreen_1 = __importDefault(require("../Models/TheaterScreen"));
 const router = (0, express_1.Router)();
 const isAuth = (req, res, next) => {
@@ -57,31 +56,9 @@ router.get('/getMovies', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({ message: 'Error fetching movies', error });
     }
 }));
-router.post('/addDay', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { date } = req.body;
-        if (yield Day_1.default.findOne({ date })) {
-            res.status(400).json({ message: 'Day already exists' });
-            return;
-        }
-        const day = new Day_1.default({
-            date: date
-        });
-        yield day.save();
-        res.status(201).json(day);
-    }
-    catch (error) {
-        res.status(500).json({ message: 'Error adding day', error });
-    }
-}));
 router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { date, movieName, time: { hours, mins, secs }, theaterScreenId } = req.body;
-        const day = yield Day_1.default.findOne({ date });
-        if (!day) {
-            res.status(500).json("Date Doesnt Exist");
-            return;
-        }
         const movie = yield Movie_1.default.findOne({ name: movieName });
         if (!movie) {
             res.status(500).json("movie Doesnt Exist");
@@ -92,7 +69,7 @@ router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void
             res.status(500).json("Theater Screen Doesnt Exist");
             return;
         }
-        const tempTimeSlot = yield TimeSlot_1.default.findOne({ time: {
+        const tempTimeSlot = yield TimeSlot_1.default.findOne({ date: date, time: {
                 hours,
                 mins,
                 secs
@@ -104,6 +81,7 @@ router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void
             return;
         }
         const timeslot = new TimeSlot_1.default({
+            date: date,
             movie: movie,
             time: {
                 hours,
@@ -113,9 +91,7 @@ router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void
             theaterScreen: theaterScreen
         });
         yield timeslot.save();
-        day.slots.push(timeslot.id);
-        yield day.save();
-        res.status(201).json(day);
+        res.status(201).json(timeslot);
     }
     catch (error) {
         res.status(500).json({ message: 'Error adding timeslot', error });
@@ -124,20 +100,16 @@ router.post('/addTimeSlot', isAuth, (req, res) => __awaiter(void 0, void 0, void
 router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { date } = req.params;
-        const day = yield Day_1.default.findOne({ date }).populate({
-            path: 'slots',
-            populate: [
-                { path: 'movie', select: 'name' },
-                { path: 'theaterScreen', select: 'Id' }
-            ],
-        });
-        if (!day) {
-            res.status(404).json({ message: "Day not found" });
+        const timeslots = yield TimeSlot_1.default.find({ date: date })
+            .populate('movie', 'name')
+            .populate('theaterScreen', 'Id');
+        if (!timeslots.length) {
+            res.status(404).json({ message: "No timeslots found for the specified date" });
             return;
         }
         const formattedDay = {
-            date: day.date,
-            slots: day.slots.map((slot) => ({
+            date,
+            slots: timeslots.map((slot) => ({
                 movieName: slot.movie.name,
                 time: slot.time,
                 theaterId: slot.theaterScreen.Id
@@ -146,18 +118,18 @@ router.get('/getDay/:date', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.json(formattedDay);
     }
     catch (error) {
-        res.status(500).json({ message: 'Error fetching Day', error });
+        res.status(500).json({ message: 'Error fetching timeslots for the day', error });
     }
 }));
 router.get('/getTimeslot', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { hours, mins, secs, theaterScreenId } = req.query;
+        const { date, hours, mins, secs, theaterScreenId } = req.query;
         const theaterScreen = yield TheaterScreen_1.default.findOne({ Id: theaterScreenId });
         if (!theaterScreen) {
             res.status(404).json({ message: 'Theater screen not found' });
             return;
         }
-        const timeslot = yield TimeSlot_1.default.findOne({
+        const timeslot = yield TimeSlot_1.default.findOne({ date: date,
             time: { hours: Number(hours), mins: Number(mins), secs: Number(secs) },
             theaterScreen: theaterScreen,
         }).populate('movie');
@@ -167,6 +139,7 @@ router.get('/getTimeslot', (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         const formattedTimeslot = {
             movie: timeslot.movie,
+            date: timeslot.date,
             time: timeslot.time,
             seating: theaterScreen.seating,
             bookedSeats: timeslot.bookedSeats,

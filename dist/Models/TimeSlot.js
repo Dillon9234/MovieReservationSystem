@@ -32,6 +32,7 @@ const Seat_1 = __importDefault(require("./Seat"));
 const TheaterScreen_1 = __importDefault(require("./TheaterScreen"));
 const Seat_2 = __importDefault(require("./Seat"));
 const timeSlotSchema = new mongoose_1.Schema({
+    date: { type: Date, required: true },
     movie: { type: mongoose_1.Schema.Types.ObjectId, ref: Movie_1.default, required: true },
     time: {
         hours: { type: Number, required: true, min: 0 },

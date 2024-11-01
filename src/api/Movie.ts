@@ -1,7 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import Movie from '../Models/Movie'
 import TimeSlot from '../Models/TimeSlot'
-import Day from '../Models/Day'
 import TheaterScreen from '../Models/TheaterScreen'
 
 const router = Router()
@@ -62,27 +61,6 @@ router.get('/getMovies', async (req: Request, res: Response) => {
   }
 })
 
-router.post('/addDay',isAuth, async (req:Request, res:Response)=>{
-  try {
-    const { date } = req.body
-
-    if (await Day.findOne({ date })) {
-      res.status(400).json({ message: 'Day already exists' })
-      return
-    }
-
-    const day = new Day({
-      date:date
-    })
-
-    await day.save()
-
-    res.status(201).json(day)
-  } catch (error) {
-    res.status(500).json({ message: 'Error adding day', error })
-  }
-})
-
 router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
   try{
     const {
@@ -93,12 +71,6 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
       }, 
       theaterScreenId
     } = req.body
-
-    const day = await Day.findOne({date})
-    if(!day){
-      res.status(500).json("Date Doesnt Exist")
-      return
-    }
 
     const movie = await Movie.findOne({name:movieName})
     if(!movie){
@@ -111,7 +83,7 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
       res.status(500).json("Theater Screen Doesnt Exist")
       return
     }
-    const tempTimeSlot = await TimeSlot.findOne({time:{
+    const tempTimeSlot = await TimeSlot.findOne({date:date, time:{
       hours,
       mins,
       secs
@@ -123,6 +95,7 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
       return
     }
     const timeslot = new TimeSlot({
+      date:date,
       movie:movie,
       time:{
         hours,
@@ -134,10 +107,7 @@ router.post('/addTimeSlot',isAuth, async (req: Request, res: Response)=>{
 
     await timeslot.save()
 
-    day.slots.push(timeslot.id)
-
-    await day.save()
-    res.status(201).json(day)
+    res.status(201).json(timeslot)
   }catch(error){
     res.status(500).json({ message: 'Error adding timeslot', error })
   }
@@ -147,21 +117,18 @@ router.get('/getDay/:date', async (req: Request, res: Response) => {
   try {
     const { date } = req.params;    
 
-    const day = await Day.findOne({ date }).populate({
-      path: 'slots',
-      populate: [
-        { path: 'movie', select: 'name' },
-        { path: 'theaterScreen', select: 'Id' }
-      ],
-    });
-    if (!day) {
-      res.status(404).json({ message: "Day not found" });
-      return
+    const timeslots = await TimeSlot.find({ date: date })
+      .populate('movie', 'name')
+      .populate('theaterScreen', 'Id');
+
+    if (!timeslots.length) {
+      res.status(404).json({ message: "No timeslots found for the specified date" });
+      return;
     }
 
     const formattedDay = {
-      date: day.date,
-      slots: day.slots.map((slot) => ({
+      date,
+      slots: timeslots.map((slot) => ({
         movieName: slot.movie.name,
         time: slot.time,
         theaterId: slot.theaterScreen.Id
@@ -170,13 +137,13 @@ router.get('/getDay/:date', async (req: Request, res: Response) => {
 
     res.json(formattedDay);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching Day', error });
+    res.status(500).json({ message: 'Error fetching timeslots for the day', error });
   }
 });
 
 router.get('/getTimeslot', async (req: Request, res: Response) => {
   try {
-    const { hours, mins, secs, theaterScreenId } = req.query;
+    const { date, hours, mins, secs, theaterScreenId } = req.query;
 
     const theaterScreen = await TheaterScreen.findOne({ Id: theaterScreenId });
     if (!theaterScreen) {
@@ -184,7 +151,7 @@ router.get('/getTimeslot', async (req: Request, res: Response) => {
       return;
     }
 
-    const timeslot = await TimeSlot.findOne({
+    const timeslot = await TimeSlot.findOne({ date:date,
       time: { hours: Number(hours), mins: Number(mins), secs: Number(secs) },
       theaterScreen: theaterScreen,
     }).populate('movie');
@@ -196,6 +163,7 @@ router.get('/getTimeslot', async (req: Request, res: Response) => {
 
     const formattedTimeslot = {
       movie: timeslot.movie,
+      date:timeslot.date,
       time: timeslot.time,
       seating: theaterScreen.seating,
       bookedSeats: timeslot.bookedSeats,
